@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#354052">
+    <title>{% block title %}ERP Ventas{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="sap-theme">
+    {% if session.user_id %}
+    <!-- SAP Header -->
+    <header class="sap-header">
+        <div class="header-left">
+            <button class="menu-toggle" id="menuToggle">
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+                <span class="hamburger"></span>
+            </button>
+            <div class="sap-logo">
+                <div class="logo-square">ERP</div>
+                <span class="logo-title">Sistema de Ventas</span>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Buscar productos, clientes, ventas..." class="search-input">
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <div class="header-actions">
+                <button class="header-btn" title="Notificaciones">
+                    <span class="icon">🔔</span>
+                    <span class="badge">3</span>
+                </button>
+                <button class="header-btn" title="Ayuda">
+                    <span class="icon">❓</span>
+                </button>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar-header">{{ session.nombre[0]|upper }}</div>
+                <div class="user-info-header">
+                    <span class="user-name-header">{{ session.nombre }}</span>
+                    <span class="user-role-header">{{ session.username }}</span>
+                </div>
+                <button class="user-dropdown-btn" onclick="toggleUserMenu()">▼</button>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="{{ url_for('configuracion') }}" class="dropdown-item">
+                        <span>⚙️</span> Configuración
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <span>🚪</span> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- SAP Navigation -->
+    <nav class="sap-nav" id="sapNav">
+        <div class="nav-section">
+            <div class="nav-section-title">PRINCIPAL</div>
+            <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">OPERACIONES</div>
+            <a href="{{ url_for('inventario') }}" class="nav-item {% if request.endpoint in ['inventario', 'nuevo_producto', 'editar_producto'] %}active{% endif %}">
+                <span class="nav-icon">📦</span>
+                <span class="nav-label">Inventario</span>
+            </a>
+            <a href="{{ url_for('ventas') }}" class="nav-item {% if request.endpoint in ['ventas', 'nueva_venta'] %}active{% endif %}">
+                <span class="nav-icon">💰</span>
+                <span class="nav-label">Ventas</span>
+            </a>
+            <a href="{{ url_for('cuentas_por_cobrar') }}" class="nav-item {% if request.endpoint in ['cuentas_por_cobrar', 'ver_pagos'] %}active{% endif %}">
+                <span class="nav-icon">🧾</span>
+                <span class="nav-label">Cuentas por Cobrar</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">FINANZAS</div>
+            <a href="{{ url_for('gastos') }}" class="nav-item {% if request.endpoint in ['gastos', 'nuevo_gasto'] %}active{% endif %}">
+                <span class="nav-icon">💸</span>
+                <span class="nav-label">Gastos</span>
+            </a>
+            <a href="{{ url_for('diezmos') }}" class="nav-item {% if request.endpoint == 'diezmos' %}active{% endif %}">
+                <span class="nav-icon">🙏</span>
+                <span class="nav-label">Diezmos</span>
+            </a>
+            <a href="{{ url_for('reportes') }}" class="nav-item {% if request.endpoint == 'reportes' %}active{% endif %}">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Reportes</span>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">SISTEMA</div>
+            <a href="{{ url_for('configuracion') }}" class="nav-item {% if request.endpoint == 'configuracion' %}active{% endif %}">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Configuración</span>
+            </a>
+        </div>
+    </nav>
+    {% endif %}
+    
+    <!-- Main Content Area -->
+    <main class="sap-main {% if not session.user_id %}no-header{% endif %}">
+        {% if session.user_id %}
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="{{ url_for('dashboard') }}" class="breadcrumb-item">Inicio</a>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current">{% block breadcrumb %}Dashboard{% endblock %}</span>
+        </div>
+        {% endif %}
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="sap-messages">
+                    {% for category, message in messages %}
+                        <div class="sap-message sap-message-{{ category }}">
+                            <span class="message-icon">
+                                {% if category == 'success' %}✓{% elif category == 'error' %}✕{% elif category == 'warning' %}⚠{% else %}ℹ{% endif %}
+                            </span>
+                            <span class="message-text">{{ message }}</span>
+                            <button class="message-close" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Page Content -->
+        <div class="sap-content">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // Detectar si es móvil
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+        
+        // Toggle menu lateral
+        const menuToggle = document.getElementById('menuToggle');
+        const sapNav = document.getElementById('sapNav');
+        const sapMain = document.querySelector('.sap-main');
+        
+        if (menuToggle && sapNav) {
+            menuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                if (isMobile()) {
+                    // En móvil: mostrar/ocultar con clase 'show'
+                    sapNav.classList.toggle('show');
+                    this.classList.toggle('active');
+                    document.body.style.overflow = sapNav.classList.contains('show') ? 'hidden' : '';
+                } else {
+                    // En desktop: colapsar/expandir
+                    sapNav.classList.toggle('collapsed');
+                    sapMain.classList.toggle('expanded');
+                    this.classList.toggle('active');
+                }
+            });
+            
+            // Cerrar menú móvil al hacer click fuera (en el overlay)
+            document.addEventListener('click', function(event) {
+                if (isMobile() && sapNav.classList.contains('show')) {
+                    if (!sapNav.contains(event.target) && !menuToggle.contains(event.target)) {
+                        sapNav.classList.remove('show');
+                        menuToggle.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                }
+            });
+            
+            // Cerrar menú móvil al hacer click en un enlace
+            const navLinks = sapNav.querySelectorAll('.nav-item');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (isMobile()) {
+                        sapNav.classList.remove('show');
+                        menuToggle.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+            
+            // Manejar cambio de tamaño de ventana
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    if (!isMobile()) {
+                        // Si cambiamos a desktop, limpiar clases móviles
+                        sapNav.classList.remove('show');
+                        menuToggle.classList.remove('active');
+                        document.body.style.overflow = '';
+                    } else {
+                        // Si cambiamos a móvil, limpiar clases desktop
+                        sapNav.classList.remove('collapsed');
+                        sapMain.classList.remove('expanded');
+                    }
+                }, 250);
+            });
+        }
+        
+        // Toggle user dropdown
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) {
+                dropdown.classList.toggle('show');
+            }
+        }
+        
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', function(event) {
+            const userMenu = document.querySelector('.user-menu');
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown && userMenu && !userMenu.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

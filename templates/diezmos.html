@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Diezmos{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Diezmos Mensuales</h1>
+        <p class="page-subtitle">Control del 10% de las ventas</p>
+    </div>
+    <div class="content-card">
+        {% if diezmos %}
+        <div class="diezmos-grid">
+            {% for diezmo in diezmos %}
+            <div class="diezmo-card {% if diezmo.estado == 'Entregado' %}diezmo-entregado{% endif %}">
+                <div class="diezmo-header">
+                    <div class="diezmo-period">
+                        <span class="diezmo-month">{{ meses[diezmo.mes] }}</span>
+                        <span class="diezmo-year">{{ diezmo.anio }}</span>
+                    </div>
+                    <span class="diezmo-status status-{{ diezmo.estado|lower }}">
+                        {% if diezmo.estado == 'Entregado' %}✓{% else %}⏳{% endif %}
+                        {{ diezmo.estado }}
+                    </span>
+                </div>
+                <div class="diezmo-amount">
+                    <span class="diezmo-label">Total Diezmo</span>
+                    <span class="diezmo-value">{{ moneda }}{{ "%.2f"|format(diezmo.total_diezmo) }}</span>
+                </div>
+                {% if diezmo.fecha_entrega %}
+                <div class="diezmo-delivery">
+                    <span>📅 Entregado el {{ diezmo.fecha_entrega[:10] }}</span>
+                </div>
+                {% endif %}
+                <form method="POST" action="{{ url_for('marcar_diezmo', id=diezmo.id) }}">
+                    <button type="submit" class="btn btn-block {% if diezmo.estado == 'Pendiente' %}btn-success{% else %}btn-secondary{% endif %}">
+                        {% if diezmo.estado == 'Pendiente' %}Marcar como Entregado{% else %}Marcar como Pendiente{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="diezmos-summary">
+            <div class="summary-card">
+                <span class="summary-label">Total Pendiente</span>
+                <span class="summary-value">{{ moneda }}{% set total_pendiente = diezmos|selectattr('estado', 'equalto', 'Pendiente')|map(attribute='total_diezmo')|sum %}{{ "%.2f"|format(total_pendiente) }}</span>
+            </div>
+            <div class="summary-card">
+                <span class="summary-label">Total Entregado</span>
+                <span class="summary-value">{{ moneda }}{% set total_entregado = diezmos|selectattr('estado', 'equalto', 'Entregado')|map(attribute='total_diezmo')|sum %}{{ "%.2f"|format(total_entregado) }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🙏</div>
+            <h3>No hay diezmos registrados</h3>
+            <p>Los diezmos se generan automáticamente al registrar ventas</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

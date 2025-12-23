@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ERP Ventas{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Panel de Control</h1>
+            <p class="page-subtitle">Resumen de {{ mes_nombre }} {{ anio }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('nueva_venta') }}" class="btn btn-primary">
+                + Nueva Venta
+            </a>
+        </div>
+    </div>
+    
+    <!-- Alertas -->
+    {% if productos_bajo_stock > 0 or productos_agotados > 0 %}
+    <div class="alerts-container" style="margin-bottom: 20px;">
+        {% if productos_agotados > 0 %}
+        <div class="alert alert-danger">
+            <span>⚠️</span>
+            <span style="flex:1">{{ productos_agotados }} producto(s) agotado(s)</span>
+            <a href="{{ url_for('inventario') }}" style="color: inherit; font-weight: 600;">Ver inventario →</a>
+        </div>
+        {% endif %}
+        
+        {% if productos_bajo_stock > 0 %}
+        <div class="alert alert-warning">
+            <span>📦</span>
+            <span style="flex:1">{{ productos_bajo_stock }} producto(s) con stock bajo</span>
+            <a href="{{ url_for('inventario') }}" style="color: inherit; font-weight: 600;">Ver inventario →</a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- KPIs -->
+    <div class="metrics-grid">
+        <div class="metric-card metric-primary">
+            <div class="metric-header">
+                <span class="metric-label">Total Vendido</span>
+                <span class="metric-icon">💰</span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(total_vendido) }}</div>
+            <div class="metric-footer">Este mes</div>
+        </div>
+        
+        <div class="metric-card metric-success">
+            <div class="metric-header">
+                <span class="metric-label">Ganancia</span>
+                <span class="metric-icon">📈</span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(ganancia_mes) }}</div>
+            <div class="metric-footer">
+                {% if total_vendido > 0 %}
+                    {{ "%.1f"|format((ganancia_mes/total_vendido)*100) }}% margen
+                {% else %}
+                    0% margen
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="metric-card metric-warning">
+            <div class="metric-header">
+                <span class="metric-label">Por Cobrar</span>
+                <span class="metric-icon">🧾</span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(total_pendiente) }}</div>
+            <div class="metric-footer">Saldo pendiente</div>
+        </div>
+        
+        <div class="metric-card metric-info">
+            <div class="metric-header">
+                <span class="metric-label">Diezmo (10%)</span>
+                <span class="metric-icon">🙏</span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(diezmo_mes) }}</div>
+            <div class="metric-footer">Del total vendido</div>
+        </div>
+    </div>
+    
+    <!-- Gráfico y Datos -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px;">
+        <div class="sap-card">
+            <div class="sap-card-header">
+                <h2 class="sap-card-title">Tendencia de Ventas - Últimos 6 Meses</h2>
+            </div>
+            <div class="sap-card-content">
+                <canvas id="chartVentas" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <div class="sap-card">
+            <div class="sap-card-header">
+                <h2 class="sap-card-title">Inventario</h2>
+            </div>
+            <div class="sap-card-content">
+                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #0a6ed1, #0854a0); border-radius: 4px; color: white; margin-bottom: 20px;">
+                    <div style="font-size: 32px; font-weight: 500; margin-bottom: 4px;">{{ moneda }}{{ "%.2f"|format(valor_inventario) }}</div>
+                    <div style="font-size: 13px; opacity: 0.9;">Valor total en stock</div>
+                </div>
+                
+                {% if productos_criticos %}
+                <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--sap-text);">Productos Críticos</h3>
+                {% for producto in productos_criticos %}
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--sap-border);">
+                    <span style="font-size: 13px;">{{ producto.nombre }}</span>
+                    <span style="font-size: 13px; font-weight: 600; {% if producto.cantidad == 0 %}color: var(--sap-danger){% else %}color: var(--sap-warning){% endif %}">
+                        {{ producto.cantidad }} unid.
+                    </span>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ventas Recientes -->
+    <div class="sap-card">
+        <div class="sap-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="sap-card-title">Ventas Recientes</h2>
+            <a href="{{ url_for('ventas') }}" class="btn btn-sm btn-secondary">Ver todas</a>
+        </div>
+        <div class="sap-card-content" style="padding: 0;">
+            {% if ventas_recientes %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Total</th>
+                        <th>Ganancia</th>
+                        <th>Tipo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas_recientes %}
+                    <tr>
+                        <td>{{ venta.fecha_venta }}</td>
+                        <td><strong>{{ venta.cliente_nombre }}</strong></td>
+                        <td>{{ venta.producto_nombre }}</td>
+                        <td>{{ moneda }}{{ "%.2f"|format(venta.total_vendido) }}</td>
+                        <td style="color: var(--sap-success);">{{ moneda }}{{ "%.2f"|format(venta.ganancia) }}</td>
+                        <td><span class="badge badge-{{ venta.tipo_venta }}">{{ venta.tipo_venta }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <p>No hay ventas registradas aún</p>
+                <a href="{{ url_for('nueva_venta') }}" class="btn btn-primary">Registrar primera venta</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('/api/estadisticas')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('chartVentas');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.mes),
+                datasets: [{
+                    label: 'Ventas',
+                    data: data.map(d => d.total),
+                    borderColor: '#0a6ed1',
+                    backgroundColor: 'rgba(10, 110, 209, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#0a6ed1',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '{{ moneda }}' + value.toFixed(0);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

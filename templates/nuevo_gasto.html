@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Gasto - ERP Ventas{% endblock %}
+{% block breadcrumb %}Registrar Gasto{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Registrar Nuevo Gasto</h1>
+            <p class="page-subtitle">Ingresa los detalles del gasto operativo</p>
+        </div>
+    </div>
+    
+    <div class="content-card" style="max-width: 800px;">
+        <form method="POST" id="gastoForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span style="color: var(--sap-danger);">*</span>
+                        Fecha del Gasto
+                    </label>
+                    <input type="date" name="fecha" class="form-input" required 
+                           value="{{ request.form.fecha or '' }}" max="{{ now().strftime('%Y-%m-%d') }}">
+                    <small class="form-hint">Fecha en que se realizó el gasto</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <span style="color: var(--sap-danger);">*</span>
+                        Categoría
+                    </label>
+                    <select name="categoria" class="form-input" required id="categoriaSelect">
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Gasto Local" {% if request.form.categoria == 'Gasto Local' %}selected{% endif %}>
+                            🏢 Gasto Local
+                        </option>
+                        <option value="Luz" {% if request.form.categoria == 'Luz' %}selected{% endif %}>
+                            💡 Luz
+                        </option>
+                        <option value="Empleados" {% if request.form.categoria == 'Empleados' %}selected{% endif %}>
+                            👥 Empleados
+                        </option>
+                        <option value="Transporte" {% if request.form.categoria == 'Transporte' %}selected{% endif %}>
+                            🚗 Transporte
+                        </option>
+                        <option value="Mercancía" {% if request.form.categoria == 'Mercancía' %}selected{% endif %}>
+                            📦 Mercancía
+                        </option>
+                        <option value="Otros" {% if request.form.categoria == 'Otros' %}selected{% endif %}>
+                            📋 Otros
+                        </option>
+                    </select>
+                    <small class="form-hint">Tipo de gasto operativo</small>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <span style="color: var(--sap-danger);">*</span>
+                    Monto del Gasto
+                </label>
+                <div style="position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--sap-text-secondary); font-weight: 500;">
+                        {{ moneda }}
+                    </span>
+                    <input type="number" name="monto" class="form-input" required 
+                           step="0.01" min="0.01" placeholder="0.00"
+                           style="padding-left: 50px; font-size: 16px; font-weight: 600;"
+                           value="{{ request.form.monto or '' }}" id="montoInput">
+                </div>
+                <small class="form-hint">Valor del gasto en {{ moneda }}</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Descripción (Opcional)</label>
+                <textarea name="descripcion" class="form-input" rows="3" 
+                          placeholder="Detalles adicionales del gasto...">{{ request.form.descripcion or '' }}</textarea>
+                <small class="form-hint">Agrega detalles para identificar mejor el gasto</small>
+            </div>
+            
+            <!-- Preview -->
+            <div id="preview" style="display: none; background: linear-gradient(135deg, #e8f4fd, #f1fdf6); border-radius: 8px; padding: 20px; margin-top: 24px; border-left: 4px solid var(--sap-primary);">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--sap-text);">
+                    Vista Previa del Gasto
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                    <div>
+                        <div style="font-size: 11px; color: var(--sap-text-secondary); text-transform: uppercase; margin-bottom: 4px;">Fecha</div>
+                        <div style="font-weight: 600;" id="prevFecha">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--sap-text-secondary); text-transform: uppercase; margin-bottom: 4px;">Categoría</div>
+                        <div style="font-weight: 600;" id="prevCategoria">-</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: var(--sap-text-secondary); text-transform: uppercase; margin-bottom: 4px;">Monto</div>
+                        <div style="font-weight: 700; font-size: 18px; color: var(--sap-primary);" id="prevMonto">{{ moneda }}0.00</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <a href="{{ url_for('gastos') }}" class="btn btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary btn-large">
+                    <span>💾</span>
+                    Registrar Gasto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Vista previa en tiempo real
+const form = document.getElementById('gastoForm');
+const preview = document.getElementById('preview');
+const fechaInput = form.querySelector('[name="fecha"]');
+const categoriaSelect = document.getElementById('categoriaSelect');
+const montoInput = document.getElementById('montoInput');
+
+function updatePreview() {
+    const fecha = fechaInput.value;
+    const categoria = categoriaSelect.value;
+    const monto = parseFloat(montoInput.value) || 0;
+    
+    if (fecha || categoria || monto > 0) {
+        preview.style.display = 'block';
+        
+        // Actualizar valores
+        document.getElementById('prevFecha').textContent = fecha || '-';
+        document.getElementById('prevCategoria').textContent = categoria || '-';
+        document.getElementById('prevMonto').textContent = '{{ moneda }}' + monto.toFixed(2);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+fechaInput.addEventListener('change', updatePreview);
+categoriaSelect.addEventListener('change', updatePreview);
+montoInput.addEventListener('input', updatePreview);
+
+// Establecer fecha actual por defecto
+if (!fechaInput.value) {
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.value = hoy;
+    updatePreview();
+}
+
+// Validación antes de enviar
+form.addEventListener('submit', function(e) {
+    const monto = parseFloat(montoInput.value);
+    if (monto <= 0) {
+        e.preventDefault();
+        alert('El monto debe ser mayor a 0');
+        montoInput.focus();
+        return false;
+    }
+});
+</script>
+{% endblock %}

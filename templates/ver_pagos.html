@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Pagos - {{ venta.cliente_nombre }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Detalle de Pagos</h1>
+        <a href="{{ url_for('cuentas_por_cobrar') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+    <div class="payment-summary">
+        <div class="summary-item">
+            <span class="summary-label">Cliente:</span>
+            <span class="summary-value">{{ venta.cliente_nombre }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Producto:</span>
+            <span class="summary-value">{{ venta.producto_nombre }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Total Venta:</span>
+            <span class="summary-value">{{ moneda }}{{ "%.2f"|format(venta.total_vendido) }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Total Pagado:</span>
+            <span class="summary-value text-success">{{ moneda }}{{ "%.2f"|format(total_pagado) }}</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Saldo Pendiente:</span>
+            <span class="summary-value text-danger">{{ moneda }}{{ "%.2f"|format(saldo_pendiente) }}</span>
+        </div>
+    </div>
+    {% if saldo_pendiente > 0 %}
+    <div class="content-card">
+        <h3>Registrar Pago</h3>
+        <form method="POST" action="{{ url_for('registrar_pago', venta_id=venta.id) }}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Monto *</label>
+                    <div class="input-group">
+                        <span class="input-prefix">{{ moneda }}</span>
+                        <input type="number" name="monto" class="form-input" step="0.01" max="{{ saldo_pendiente }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fecha de Pago *</label>
+                    <input type="date" name="fecha_pago" id="fechaPago" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Método de Pago</label>
+                    <select name="metodo_pago" class="form-input">
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="tarjeta">Tarjeta</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Notas</label>
+                <textarea name="notas" class="form-input" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Pago</button>
+        </form>
+    </div>
+    {% endif %}
+    <div class="content-card">
+        <h3>Historial de Pagos</h3>
+        {% if pagos %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Fecha</th><th>Monto</th><th>Método</th><th>Notas</th></tr>
+                </thead>
+                <tbody>
+                    {% for pago in pagos %}
+                    <tr>
+                        <td>{{ pago.fecha_pago }}</td>
+                        <td>{{ moneda }}{{ "%.2f"|format(pago.monto) }}</td>
+                        <td>{{ pago.metodo_pago|capitalize }}</td>
+                        <td>{{ pago.notas }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No hay pagos registrados aún</p>
+        {% endif %}
+    </div>
+</div>
+<script>document.getElementById('fechaPago').valueAsDate = new Date();</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Editar Producto{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Editar Producto</h1>
+        <a href="{{ url_for('inventario') }}" class="btn btn-secondary">← Volver</a>
+    </div>
+    <div class="form-container">
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-group form-group-full">
+                    <label class="form-label">Nombre del Producto *</label>
+                    <input type="text" name="nombre" class="form-input" value="{{ producto.nombre }}" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group form-group-full">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="descripcion" class="form-input" rows="2">{{ producto.descripcion }}</textarea>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Cantidad *</label>
+                    <input type="number" name="cantidad" class="form-input" value="{{ producto.cantidad }}" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Costo Unitario *</label>
+                    <div class="input-group">
+                        <span class="input-prefix">{{ moneda }}</span>
+                        <input type="number" name="costo_unitario" class="form-input" value="{{ producto.costo_unitario }}" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Precio de Venta *</label>
+                    <div class="input-group">
+                        <span class="input-prefix">{{ moneda }}</span>
+                        <input type="number" name="precio_venta" class="form-input" value="{{ producto.precio_venta }}" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Mínimo</label>
+                    <input type="number" name="stock_minimo" class="form-input" value="{{ producto.stock_minimo }}" min="0" required>
+                </div>
+            </div>
+            <div class="form-actions">
+                <a href="{{ url_for('inventario') }}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Actualizar Producto</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Gastos - ERP Ventas{% endblock %}
+{% block breadcrumb %}Gastos Operativos{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Gastos Operativos</h1>
+            <p class="page-subtitle">Control de gastos de {{ mes_nombre }} {{ anio_actual }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('nuevo_gasto') }}" class="btn btn-primary">
+                + Registrar Gasto
+            </a>
+        </div>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="sap-card" style="margin-bottom: 20px;">
+        <div class="sap-card-content">
+            <form method="GET" style="display: flex; gap: 12px; align-items: flex-end;">
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Mes</label>
+                    <select name="mes" class="form-input">
+                        {% for i in range(1, 13) %}
+                        <option value="{{ i }}" {% if i == mes_actual %}selected{% endif %}>
+                            {% if i == 1 %}Enero{% elif i == 2 %}Febrero{% elif i == 3 %}Marzo
+                            {% elif i == 4 %}Abril{% elif i == 5 %}Mayo{% elif i == 6 %}Junio
+                            {% elif i == 7 %}Julio{% elif i == 8 %}Agosto{% elif i == 9 %}Septiembre
+                            {% elif i == 10 %}Octubre{% elif i == 11 %}Noviembre{% else %}Diciembre{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group" style="margin: 0; flex: 1;">
+                    <label class="form-label">Año</label>
+                    <select name="anio" class="form-input">
+                        {% for year in range(anio_actual, anio_actual - 5, -1) %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary">Filtrar</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Totales por Categoría -->
+    <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 24px;">
+        <div class="metric-card" style="border-left: 4px solid #0a6ed1;">
+            <div class="metric-header">
+                <span class="metric-label">Total Mensual</span>
+                <span class="metric-icon">💰</span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(total_mensual) }}</div>
+            <div class="metric-footer">Inversión total</div>
+        </div>
+        
+        {% for cat in totales_categorias %}
+        <div class="metric-card">
+            <div class="metric-header">
+                <span class="metric-label">{{ cat.categoria }}</span>
+                <span class="metric-icon">
+                    {% if cat.categoria == 'Gasto Local' %}🏢
+                    {% elif cat.categoria == 'Luz' %}💡
+                    {% elif cat.categoria == 'Empleados' %}👥
+                    {% elif cat.categoria == 'Transporte' %}🚗
+                    {% elif cat.categoria == 'Mercancía' %}📦
+                    {% else %}📋{% endif %}
+                </span>
+            </div>
+            <div class="metric-value">{{ moneda }}{{ "%.2f"|format(cat.total) }}</div>
+            <div class="metric-footer">
+                {{ "%.1f"|format((cat.total/total_mensual)*100) if total_mensual > 0 else 0 }}% del total
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Tabla de Gastos -->
+    <div class="sap-card">
+        <div class="sap-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="sap-card-title">Historial de Gastos</h2>
+            <button class="btn btn-sm btn-secondary" onclick="document.getElementById('exportModal').style.display='block'">
+                📥 Exportar Quincena
+            </button>
+        </div>
+        <div class="sap-card-content" style="padding: 0;">
+            {% if gastos %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Categoría</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gasto in gastos %}
+                    <tr>
+                        <td>{{ gasto.fecha }}</td>
+                        <td>
+                            <span class="badge" style="background: #e8f4fd; color: #053c65;">
+                                {{ gasto.categoria }}
+                            </span>
+                        </td>
+                        <td>{{ gasto.descripcion or '-' }}</td>
+                        <td style="font-weight: 600;">{{ moneda }}{{ "%.2f"|format(gasto.monto) }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('eliminar_gasto', id=gasto.id) }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('¿Estás seguro de eliminar este gasto?');">
+                                <button type="submit" class="btn-icon" style="color: var(--sap-danger);">
+                                    🗑️
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">💸</div>
+                <p>No hay gastos registrados en este mes</p>
+                <a href="{{ url_for('nuevo_gasto') }}" class="btn btn-primary">Registrar primer gasto</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Exportación -->
+<div id="exportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 8px; padding: 32px; max-width: 400px; width: 90%;">
+        <h3 style="margin-bottom: 20px; font-size: 18px; font-weight: 600;">Exportar Gastos a Excel</h3>
+        
+        <form method="POST" action="{{ url_for('exportar_gastos') }}">
+            <div class="form-group">
+                <label class="form-label">Mes</label>
+                <select name="mes" class="form-input" required>
+                    {% for i in range(1, 13) %}
+                    <option value="{{ i }}" {% if i == mes_actual %}selected{% endif %}>
+                        {% if i == 1 %}Enero{% elif i == 2 %}Febrero{% elif i == 3 %}Marzo
+                        {% elif i == 4 %}Abril{% elif i == 5 %}Mayo{% elif i == 6 %}Junio
+                        {% elif i == 7 %}Julio{% elif i == 8 %}Agosto{% elif i == 9 %}Septiembre
+                        {% elif i == 10 %}Octubre{% elif i == 11 %}Noviembre{% else %}Diciembre{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Año</label>
+                <select name="anio" class="form-input" required>
+                    {% for year in range(anio_actual, anio_actual - 5, -1) %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Quincena</label>
+                <select name="quincena" class="form-input" required>
+                    <option value="primera">Primera Quincena (1-15)</option>
+                    <option value="segunda">Segunda Quincena (16-31)</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" style="flex: 1;" 
+                        onclick="document.getElementById('exportModal').style.display='none'">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    Exportar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Cerrar modal al hacer click fuera
+document.getElementById('exportModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.style.display = 'none';
+    }
+});
+
+// Mostrar modal
+window.addEventListener('load', function() {
+    const modal = document.getElementById('exportModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

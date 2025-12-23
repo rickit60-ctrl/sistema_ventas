@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Cuentas por Cobrar{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Cuentas por Cobrar</h1>
+        <p class="page-subtitle">Clientes que tienen saldo pendiente</p>
+    </div>
+    <div class="content-card">
+        {% if cuentas %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Total Venta</th>
+                        <th>Pagado</th>
+                        <th>Saldo Pendiente</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cuenta in cuentas %}
+                    <tr>
+                        <td>{{ cuenta.fecha_venta }}</td>
+                        <td><strong>{{ cuenta.cliente_nombre }}</strong><br><small>{{ cuenta.cliente_telefono }}</small></td>
+                        <td>{{ cuenta.producto_nombre }}</td>
+                        <td>{{ moneda }}{{ "%.2f"|format(cuenta.total_vendido) }}</td>
+                        <td>{{ moneda }}{{ "%.2f"|format(cuenta.total_pagado) }}</td>
+                        <td class="text-danger"><strong>{{ moneda }}{{ "%.2f"|format(cuenta.saldo_pendiente) }}</strong></td>
+                        <td><span class="badge badge-{{ cuenta.estado_pago }}">{{ cuenta.estado_pago|capitalize }}</span></td>
+                        <td>
+                            <a href="{{ url_for('ver_pagos', venta_id=cuenta.id) }}" class="btn-sm btn-primary">Ver Pagos</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🧾</div>
+            <h3>No hay cuentas pendientes</h3>
+            <p>Todas las ventas a crédito están pagadas</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

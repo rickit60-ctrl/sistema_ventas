@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario - ERP Ventas{% endblock %}
+{% block breadcrumb %}Inventario{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Inventario de Productos</h1>
+            <p class="page-subtitle">Valor total: {{ moneda }}{{ "%.2f"|format(valor_total) }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">
+                + Nuevo Producto
+            </a>
+        </div>
+    </div>
+    
+    {% if productos %}
+    <div class="sap-card">
+        <div class="sap-card-content" style="padding: 0;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Stock</th>
+                        <th>Estado</th>
+                        <th>Costo Unit.</th>
+                        <th>Precio Venta</th>
+                        <th>Margen</th>
+                        <th>Valor Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td>
+                            <strong>{{ producto.nombre }}</strong>
+                            {% if producto.descripcion %}
+                            <br><small style="color: var(--sap-text-secondary);">{{ producto.descripcion }}</small>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge" style="background: #e8f4fd; color: #053c65;">
+                                {{ producto.cantidad }} unidades
+                            </span>
+                        </td>
+                        <td>
+                            {% if producto.estado == 'disponible' %}
+                            <span class="badge" style="background: #f1fdf6; color: #0d5c29;">✓ Disponible</span>
+                            {% elif producto.estado == 'bajo' %}
+                            <span class="badge" style="background: #fef7ec; color: #8f4e00;">⚠ Bajo</span>
+                            {% else %}
+                            <span class="badge" style="background: #fdeded; color: #8a0000;">✕ Agotado</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ moneda }}{{ "%.2f"|format(producto.costo_unitario) }}</td>
+                        <td style="font-weight: 600;">{{ moneda }}{{ "%.2f"|format(producto.precio_venta) }}</td>
+                        <td>
+                            {% if producto.costo_unitario > 0 %}
+                                {% set margen = ((producto.precio_venta - producto.costo_unitario) / producto.costo_unitario) * 100 %}
+                                {{ "%.0f"|format(margen) }}%
+                            {% else %}
+                                <span style="color: #888;">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td style="font-weight: 600; color: var(--sap-primary);">
+                            {{ moneda }}{{ "%.2f"|format(producto.cantidad * producto.costo_unitario) }}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('editar_producto', id=producto.id) }}" class="btn-icon" style="color: var(--sap-primary);" title="Editar">
+                                ✏️
+                            </a>
+                            <form method="POST" action="{{ url_for('eliminar_producto', id=producto.id) }}" 
+                                  style="display: inline;"
+                                  onsubmit="return confirm('¿Eliminar {{ producto.nombre }}?');">
+                                <button type="submit" class="btn-icon" style="color: var(--sap-danger);" title="Eliminar">
+                                    🗑️
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <p>No hay productos en inventario</p>
+        <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">Agregar primer producto</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

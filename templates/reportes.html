@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Reportes - ERP Ventas{% endblock %}
+{% block breadcrumb %}Reportes{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Reportes y Exportación</h1>
+            <p class="page-subtitle">Genera reportes mensuales en Excel</p>
+        </div>
+    </div>
+    
+    <div class="content-card">
+        <form method="POST" action="{{ url_for('exportar_reporte') }}">
+            <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--sap-text);">Exportar Reporte Mensual</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Mes</label>
+                    <select name="mes" class="form-input" required>
+                        {% for i in range(1, 13) %}
+                        <option value="{{ i }}" {% if i == now().month %}selected{% endif %}>
+                            {% if i == 1 %}Enero{% elif i == 2 %}Febrero{% elif i == 3 %}Marzo{% elif i == 4 %}Abril
+                            {% elif i == 5 %}Mayo{% elif i == 6 %}Junio{% elif i == 7 %}Julio{% elif i == 8 %}Agosto
+                            {% elif i == 9 %}Septiembre{% elif i == 10 %}Octubre{% elif i == 11 %}Noviembre{% else %}Diciembre{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Año</label>
+                    <select name="anio" class="form-input" required>
+                        {% for year in range(now().year, now().year - 5, -1) %}
+                        <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-large" style="margin-top: 20px;">
+                <span>📥</span>
+                Descargar Reporte Excel
+            </button>
+        </form>
+        
+        <div class="info-box" style="margin-top: 32px;">
+            <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--sap-text);">
+                <span style="margin-right: 8px;">ℹ️</span>
+                El reporte incluye:
+            </h4>
+            <ul style="list-style: none; padding: 0;">
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Lista completa de ventas del mes
+                </li>
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Productos vendidos y cantidades
+                </li>
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Total vendido del mes
+                </li>
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Ganancia total del mes
+                </li>
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Diezmo del mes (10%)
+                </li>
+                <li style="padding: 8px 0; color: var(--sap-text);">
+                    <span style="color: var(--sap-success); margin-right: 8px;">✓</span>
+                    Resumen por producto
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

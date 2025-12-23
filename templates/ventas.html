@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Ventas{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Registro de Ventas</h1>
+        <a href="{{ url_for('nueva_venta') }}" class="btn btn-primary">+ Nueva Venta</a>
+    </div>
+    <div class="content-card">
+        {% if ventas %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Cant.</th>
+                        <th>Total</th>
+                        <th>Ganancia</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas %}
+                    <tr>
+                        <td>{{ venta.fecha_venta }}</td>
+                        <td>{{ venta.cliente_nombre }}</td>
+                        <td>{{ venta.producto_nombre }}</td>
+                        <td class="text-center">{{ venta.cantidad }}</td>
+                        <td>{{ moneda }}{{ "%.2f"|format(venta.total_vendido) }}</td>
+                        <td class="text-success">{{ moneda }}{{ "%.2f"|format(venta.ganancia) }}</td>
+                        <td><span class="badge badge-{{ venta.tipo_venta }}">{{ venta.tipo_venta|capitalize }}</span></td>
+                        <td><span class="badge badge-{{ venta.estado_pago }}">{{ venta.estado_pago|capitalize }}</span></td>
+                        <td>
+                            {% if venta.tipo_venta == 'credito' %}
+                            <a href="{{ url_for('ver_pagos', venta_id=venta.id) }}" class="btn-icon">💳</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💰</div>
+            <h3>No hay ventas registradas</h3>
+            <a href="{{ url_for('nueva_venta') }}" class="btn btn-primary">Registrar primera venta</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% block title %}Configuración{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Configuración del Sistema</h1>
+            <p class="page-subtitle">Personaliza tu sistema de ventas</p>
+        </div>
+    </div>
+    
+    <div class="config-container">
+        <div class="config-section">
+            <div class="section-title">
+                <span class="section-icon">💱</span>
+                <h2>Configuración de Moneda</h2>
+            </div>
+            
+            <!-- Selección rápida de monedas -->
+            <div class="currency-quick-select">
+                <h3 class="quick-select-title">Selección Rápida</h3>
+                <div class="currency-buttons">
+                    <button type="button" class="currency-btn" data-simbolo="RD$" data-codigo="DOP">
+                        <span class="currency-flag">🇩🇴</span>
+                        <span class="currency-symbol">RD$</span>
+                        <span class="currency-name">Peso Dominicano</span>
+                        <span class="currency-code">DOP</span>
+                    </button>
+                    <button type="button" class="currency-btn" data-simbolo="US$" data-codigo="USD">
+                        <span class="currency-flag">🇺🇸</span>
+                        <span class="currency-symbol">US$</span>
+                        <span class="currency-name">Dólar Americano</span>
+                        <span class="currency-code">USD</span>
+                    </button>
+                    <button type="button" class="currency-btn" data-simbolo="€" data-codigo="EUR">
+                        <span class="currency-flag">🇪🇺</span>
+                        <span class="currency-symbol">€</span>
+                        <span class="currency-name">Euro</span>
+                        <span class="currency-code">EUR</span>
+                    </button>
+                    <button type="button" class="currency-btn" data-simbolo="$" data-codigo="MXN">
+                        <span class="currency-flag">🇲🇽</span>
+                        <span class="currency-symbol">$</span>
+                        <span class="currency-name">Peso Mexicano</span>
+                        <span class="currency-code">MXN</span>
+                    </button>
+                    <button type="button" class="currency-btn" data-simbolo="£" data-codigo="GBP">
+                        <span class="currency-flag">🇬🇧</span>
+                        <span class="currency-symbol">£</span>
+                        <span class="currency-name">Libra Esterlina</span>
+                        <span class="currency-code">GBP</span>
+                    </button>
+                    <button type="button" class="currency-btn" data-simbolo="¥" data-codigo="JPY">
+                        <span class="currency-flag">🇯🇵</span>
+                        <span class="currency-symbol">¥</span>
+                        <span class="currency-name">Yen Japonés</span>
+                        <span class="currency-code">JPY</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="divider">
+                <span>O personaliza manualmente</span>
+            </div>
+            
+            <!-- Formulario manual -->
+            <form method="POST" id="configForm" class="config-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">💲</span>
+                            Símbolo de Moneda
+                        </label>
+                        <input type="text" name="moneda_simbolo" id="moneda_simbolo" 
+                               class="form-input" value="{{ config.moneda_simbolo }}" 
+                               placeholder="Ej: RD$, US$, €" required>
+                        <small class="form-hint">El símbolo que aparecerá en todo el sistema</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">🏷️</span>
+                            Código de Moneda
+                        </label>
+                        <input type="text" name="moneda_codigo" id="moneda_codigo" 
+                               class="form-input" value="{{ config.moneda_codigo }}" 
+                               placeholder="Ej: DOP, USD, EUR" required>
+                        <small class="form-hint">Código ISO de la moneda (3 letras)</small>
+                    </div>
+                </div>
+                
+                <!-- Vista previa -->
+                <div class="preview-section">
+                    <h3 class="preview-title">Vista Previa</h3>
+                    <div class="preview-grid">
+                        <div class="preview-item">
+                            <span class="preview-label">Precio de producto:</span>
+                            <span class="preview-value" id="preview1">{{ config.moneda_simbolo }}1,500.00</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Total de venta:</span>
+                            <span class="preview-value" id="preview2">{{ config.moneda_simbolo }}3,250.50</span>
+                        </div>
+                        <div class="preview-item">
+                            <span class="preview-label">Ganancia:</span>
+                            <span class="preview-value success" id="preview3">{{ config.moneda_simbolo }}1,250.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="location.reload()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        <span>💾</span>
+                        Guardar Configuración
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="info-card">
+            <div class="info-header">
+                <span class="info-icon">💡</span>
+                <h3>Información Importante</h3>
+            </div>
+            <div class="info-content">
+                <div class="info-item">
+                    <span class="info-bullet">✓</span>
+                    <p>Los cambios se reflejan <strong>inmediatamente</strong> en todo el sistema</p>
+                </div>
+                <div class="info-item">
+                    <span class="info-bullet">✓</span>
+                    <p>Puedes cambiar la moneda <strong>en cualquier momento</strong></p>
+                </div>
+                <div class="info-item">
+                    <span class="info-bullet">✓</span>
+                    <p>La configuración es <strong>personal</strong> para tu usuario</p>
+                </div>
+                <div class="info-item">
+                    <span class="info-bullet">✓</span>
+                    <p>Usa el símbolo que prefieras (RD$, $, US$, etc.)</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monedas populares de referencia -->
+        <div class="reference-card">
+            <div class="reference-header">
+                <span class="reference-icon">🌎</span>
+                <h3>Monedas Populares</h3>
+            </div>
+            <div class="reference-grid">
+                <div class="reference-item">
+                    <span class="ref-flag">🇩🇴</span>
+                    <div class="ref-info">
+                        <strong>RD$</strong>
+                        <span>Peso Dominicano (DOP)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇺🇸</span>
+                    <div class="ref-info">
+                        <strong>US$</strong>
+                        <span>Dólar Americano (USD)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇪🇺</span>
+                    <div class="ref-info">
+                        <strong>€</strong>
+                        <span>Euro (EUR)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇲🇽</span>
+                    <div class="ref-info">
+                        <strong>$</strong>
+                        <span>Peso Mexicano (MXN)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇬🇧</span>
+                    <div class="ref-info">
+                        <strong>£</strong>
+                        <span>Libra Esterlina (GBP)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇨🇦</span>
+                    <div class="ref-info">
+                        <strong>CAD$</strong>
+                        <span>Dólar Canadiense (CAD)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇨🇭</span>
+                    <div class="ref-info">
+                        <strong>CHF</strong>
+                        <span>Franco Suizo (CHF)</span>
+                    </div>
+                </div>
+                <div class="reference-item">
+                    <span class="ref-flag">🇯🇵</span>
+                    <div class="ref-info">
+                        <strong>¥</strong>
+                        <span>Yen Japonés (JPY)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Selección rápida de moneda
+document.querySelectorAll('.currency-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const simbolo = this.dataset.simbolo;
+        const codigo = this.dataset.codigo;
+        
+        // Actualizar inputs
+        document.getElementById('moneda_simbolo').value = simbolo;
+        document.getElementById('moneda_codigo').value = codigo;
+        
+        // Actualizar vista previa
+        updatePreview(simbolo);
+        
+        // Highlight seleccionado
+        document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        // Scroll suave al formulario
+        document.getElementById('configForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+});
+
+// Actualizar vista previa al escribir
+document.getElementById('moneda_simbolo').addEventListener('input', function() {
+    updatePreview(this.value);
+});
+
+function updatePreview(simbolo) {
+    document.getElementById('preview1').textContent = simbolo + '1,500.00';
+    document.getElementById('preview2').textContent = simbolo + '3,250.50';
+    document.getElementById('preview3').textContent = simbolo + '1,250.00';
+}
+
+// Marcar moneda actual como seleccionada
+const simboloActual = "{{ config.moneda_simbolo }}";
+const codigoActual = "{{ config.moneda_codigo }}";
+document.querySelectorAll('.currency-btn').forEach(btn => {
+    if (btn.dataset.simbolo === simboloActual && btn.dataset.codigo === codigoActual) {
+        btn.classList.add('selected');
+    }
+});
+</script>
+{% endblock %}
